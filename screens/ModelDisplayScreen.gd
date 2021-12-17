@@ -4,8 +4,11 @@ extends Spatial
 const OPEN_SEE: Resource = preload("res://utils/OpenSeeGD.tscn")
 
 const DEFAULT_GENERIC_MODEL_PATH: String = "res://entities/basic-models/Duck.tscn"
+
 const GENERIC_MODEL_SCRIPT_PATH: String = "res://entities/BasicModel.gd"
 const VRM_MODEL_SCRIPT_PATH: String = "res://entities/vrm/VRMModel.gd"
+const PNG_TUBER_SCRIPT_PATH: String = "res://entities/PngTuber.gd"
+
 const VrmLoader: Resource = preload("res://addons/vrm/vrm_loader.gd")
 
 export var model_resource_path: String
@@ -267,6 +270,18 @@ func _try_load_model(file_path):
 			translation_adjustment = Vector3(1, -1, 1)
 			rotation_adjustment = Vector3(-1, -1, 1)
 			AppManager.logger.info("TSCN file loaded successfully.")
+		"png", "jpg", "jpeg", "bmp", "tga", "webp":
+			var sprite3d := Sprite3D.new()
+			var texture := ImageTexture.new()
+			var image := Image.new()
+			if image.load(file_path) != OK:
+				_try_load_model(DEFAULT_GENERIC_MODEL_PATH)
+				AppManager.logger.notify("Unable to load in PngTuber file")
+				return
+			texture.create_from_image(image)
+			sprite3d.texture = texture
+			model = sprite3d
+			model.set_script(load(PNG_TUBER_SCRIPT_PATH))
 		_:
 			AppManager.logger.info("File extension not recognized. %s" % file_path)
 			printerr("File extension not recognized. %s" % file_path)
